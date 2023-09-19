@@ -15,9 +15,12 @@ Limitations:
 
 
 Running the program:
-    Prerequisite: must have c++ compiler and python 3 installed (to run tests).
+    Prerequisite: must have c++ compiler, make extension, and 
+    python 3 installed (to run tests).
 
-    Build with g++: g++ -std=c++11 -o main main.cpp
+    Build with g++: g++ -std=c++11 -o main main.cpp 
+    or
+    Build with make: make
 
     Run with user entered data: ./main
 

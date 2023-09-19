@@ -194,8 +194,8 @@ Complex divide(const Complex z1, const Complex z2) {
     Return true if the input is null data (empty line)
 */
 bool isWhitespaceOrEmpty(const string str) {
-    for (char c : str) {
-        if (!isspace(c)) {
+    for (int i = 0; i < str.length(); i++) {
+        if (!isspace(str[i])) {
             return false;
         }
     }
