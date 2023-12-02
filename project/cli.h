@@ -19,6 +19,17 @@
 #define signalDownPanel "+---------------------+\r\n|    Signal Elevator  |\r\n|      [  down  ]     |\r\n+---------------------+\r\n\r\n"
 #define elevatorPanel "+-------------------------+\r\n|       Elevator Panel    |\r\n+-------------------------+\r\n|  [b]  [1]  [2]  [3]  [4]|\r\n|                         |\r\n|   <             >       |\r\n| Door Open   Door Close  |\r\n+-------------------------+\r\n"
 
+typedef struct {
+  int targetFloor;   // Floor number that user wants to go to
+	int currentFloor; //current floor the elevator is on
+	char direction; //what direction they want to go. ex: on floor 2 and want to go down. //u, d, or i: Up, down, idle
+} ElevatorState;
+
+typedef struct {
+	int currentFloor; //floor number that the user is on
+	char direction; //what direction they want to go. ex: on floor 2 and want to go down.
+} OutsidePanelState;
 
 void CLI_Transmit(uint8_t* pData, uint16_t Size);
 void CLI_Receive(uint8_t *pData);
+void EXTI15_10_IRQHandler(void);

@@ -3,8 +3,9 @@
 
 QueueHandle_t xCLIQueue;
 
+//initialize USART, GPIOA, GPIOC, GPAFIO, and ISR priority
 void serial_open(void){
-		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;//GPIO port A
+		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN |RCC_APB2ENR_IOPCEN | RCC_APB2ENR_AFIOEN; //enable port a, c, afio
 		RCC->APB1ENR |= RCC_APB1ENR_USART2EN; //enable USART2 clock
 		
 		//USART2 TX PA2 as output and RX PA3 as input
@@ -14,6 +15,17 @@ void serial_open(void){
 		//PA5 as a general-purpose output push-pull (LED)
 		GPIOA->CRL &= ~(GPIO_CRL_CNF5_0 | GPIO_CRL_CNF5_1);
 		GPIOA->CRL |= (GPIO_CRL_MODE5_0 | GPIO_CRL_MODE5_1);
+	
+
+		AFIO->EXTICR[3] |= AFIO_EXTICR4_EXTI13_PC; // Map PC13 to EXTI13
+		// Enable EXTI line 13 for PA13
+    EXTI->IMR |= EXTI_IMR_MR13; // Enable interrupt on EXTI line 13 (PC13)
+    EXTI->FTSR |= EXTI_FTSR_TR13; // Set falling edge trigger on EXTI line 13 (PC13)
+
+    // Enable and set EXTI line 0 IRQ in NVIC
+		NVIC_EnableIRQ(EXTI15_10_IRQn); // Enable EXTI 15 to 10 IRQ in NVIC
+		NVIC_SetPriority(EXTI15_10_IRQn, 6); // Set priority level
+	
 	
 		// Set baud rate to 115200 bps for clock at 36mhz
 		USART2->BRR = (19 << 4) | (9 & 0xF);
@@ -30,6 +42,7 @@ void serial_open(void){
 				
 }
 
+//Enable timer interrupt
 void enable_interrupt(void) {
 		RCC->APB1ENR |= RCC_APB1ENR_TIM2EN; //enable timer 2 clock
 
@@ -40,6 +53,7 @@ void enable_interrupt(void) {
 		TIM2->CR1 |= TIM_CR1_CEN;//enable timer
 }
 
+// send a byte to the cli using USART
 int sendbyte(uint8_t b) {
 	
     TIM2->SR &= ~TIM_SR_UIF;  // Clear update flag
@@ -73,6 +87,7 @@ int sendbyte(uint8_t b) {
     return 0; // Success
 }
 
+// close connection
 void serial_close(void)
 {
 	USART2->CR1 &= ~(USART_CR1_TE | USART_CR1_RE | USART_CR1_UE);
@@ -82,7 +97,7 @@ void serial_close(void)
 	USART2->CR1 &= ~USART_CR1_UE; // Disable USART2
 
 }
-// USART2 interrupt service routine
+// USART2 interrupt service routine. This will receive a character and send to the CLI queue
 void USART2_IRQHandler(void) {
 	uint8_t characterReceived;
     if (USART2->SR & USART_SR_RXNE) {
